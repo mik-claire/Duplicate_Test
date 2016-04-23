@@ -10,6 +10,15 @@ namespace Duplicate_Test
 {
     class Program
     {
+        private const int INTERVAL_MINUTES = 5;
+        private const string DUPLICATE_TWEET_DOC = "Duplicate-Test tweet.";
+
+        private static Tokens tokens;
+        private static User user;
+
+        private static bool tweetedInMinute = false;
+        private static int count = 0;
+
         /// <summary>
         /// Main
         /// </summary>
@@ -32,7 +41,7 @@ namespace Duplicate_Test
             user = t.Account.VerifyCredentials();
 
             TimerCallback tcb = new TimerCallback(timer_Tick);
-            Timer timer = new Timer(tcb, null, 0, 1000);
+            Timer timer = new Timer(tcb, null, 0, 5000);
 
             Console.WriteLine("Authentication was successful.");
             Console.WriteLine("Duplicate-Test start.");
@@ -47,7 +56,7 @@ namespace Duplicate_Test
                 {
                     case "status":
                         Console.WriteLine("Tweet Count: {0}", count);
-                        Console.WriteLine("Ellapsed Time: {0} min.", count * 10);
+                        Console.WriteLine("Ellapsed Time: {0} min.", count * INTERVAL_MINUTES);
                         Console.WriteLine();
                         break;
                     default:
@@ -55,14 +64,6 @@ namespace Duplicate_Test
                 }
             } while (command != "exit");
         }
-
-        private static Tokens tokens;
-        private static User user;
-
-        private static bool tweetedInMinute = false;
-        private static int count = 0;
-
-        private const string DUPLICATE_TWEET_DOC = "Duplicate-Test tweet.";
 
         /// <summary>
         /// Timer Event
@@ -75,7 +76,7 @@ namespace Duplicate_Test
             }
 
             DateTime dt = DateTime.Now;
-            if (dt.Minute % 10 != 0)
+            if (dt.Minute % INTERVAL_MINUTES != 0)
             {
                 tweetedInMinute = false;
                 return;
@@ -86,12 +87,12 @@ namespace Duplicate_Test
 @"Tweet count: {0}
 Elapsed Time: {1} min.",
                 count,
-                count * 10);
+                count * INTERVAL_MINUTES);
             tweet(tokens, doc);
+            count++;
             tweet(tokens, DUPLICATE_TWEET_DOC);
             Console.WriteLine();
 
-            count++;
             tweetedInMinute = true;
 
             Console.Write("Command? > ");
