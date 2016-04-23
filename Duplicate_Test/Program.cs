@@ -70,15 +70,15 @@ namespace Duplicate_Test
         /// </summary>
         private static void timer_Tick(object o)
         {
-            if (tweetedInMinute)
-            {
-                return;
-            }
-
             DateTime dt = DateTime.Now;
             if (dt.Minute % INTERVAL_MINUTES != 0)
             {
                 tweetedInMinute = false;
+                return;
+            }
+
+            if (tweetedInMinute)
+            {
                 return;
             }
 
