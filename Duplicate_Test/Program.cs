@@ -19,7 +19,8 @@ namespace Duplicate_Test
         private static User user;
 
         private static bool tweetedInMinute = false;
-        private static int count = 0;
+        private static int tweetCount = 0;
+        private static int resetCount = 0;
         private static string filePath = string.Empty;
         private static bool isNotTweeted = true;
 
@@ -68,8 +69,8 @@ namespace Duplicate_Test
                 switch (command)
                 {
                     case "status":
-                        Console.WriteLine("Tweet Count: {0}", count);
-                        Console.WriteLine("Ellapsed Time: {0} min.", count * INTERVAL_MINUTES);
+                        Console.WriteLine("Tweet Count: {0}", tweetCount);
+                        Console.WriteLine("Ellapsed Time: {0} min.", tweetCount * INTERVAL_MINUTES);
                         Console.WriteLine();
                         break;
                     default:
@@ -78,6 +79,11 @@ namespace Duplicate_Test
             } while (command != "exit");
         }
 
+        /// <summary>
+        /// Read First-Tweet ID from .txt
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private static long getStatusId(string filePath)
         {
             StreamReader sr = null;
@@ -99,6 +105,11 @@ namespace Duplicate_Test
             }
         }
 
+        /// <summary>
+        /// Write First-Tweet ID to .txt
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="statusId"></param>
         private static void setStatusId(string filePath, long statusId)
         {
             StreamWriter sw = null;
@@ -135,15 +146,16 @@ namespace Duplicate_Test
             }
 
             Console.WriteLine();
-            string doc = string.Format("Duplicate-Test. Tweet count: {0}, Elapsed Time: {1} min.",
-                count,
-                count * INTERVAL_MINUTES);
+            string doc = string.Format("Duplicate-Test. Tweet Count: {0}, Reset Count: {1}, Elapsed Time: {2} min.",
+                tweetCount,
+                tweetCount * INTERVAL_MINUTES);
             tweet(tokens, doc);
-            count++;
+            tweetCount++;
 
             if (tweet(tokens, DUPLICATE_TWEET_DOC))
             {
-                count = 1;
+                tweetCount = 1;
+                resetCount++;
             }
 
             Console.WriteLine();
@@ -190,8 +202,6 @@ doc: {1}",
         /// <summary>
         /// Delete
         /// </summary>
-        /// <param name="timestamp"></param>
-        /// <returns></returns>
         private static void destroyTweet(Tokens tokens, long sinceId)
         {
             var param= new Dictionary<string, object>();
@@ -200,7 +210,6 @@ doc: {1}",
             param.Add("since_id", sinceId);
 
             var searchResult = tokens.Search.Tweets(param);
-            // var searchResult = tokens.Search.Tweets(param);
 
             foreach (var status in searchResult)
             {
