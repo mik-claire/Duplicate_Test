@@ -88,17 +88,19 @@ namespace Duplicate_Test
 
             Console.WriteLine();
             string doc = string.Format(
-@"Tweet count: {0}
-Elapsed Time: {1} min.",
+@"Tweet count: {0}, Elapsed Time: {1} min.",
                 count,
                 count * INTERVAL_MINUTES);
             tweet(tokens, doc);
             count++;
-            tweet(tokens, DUPLICATE_TWEET_DOC);
+
+            if (tweet(tokens, DUPLICATE_TWEET_DOC))
+            {
+                count = 1;
+            }
+
             Console.WriteLine();
-
             tweetedInMinute = true;
-
             Console.Write("Command? > ");
         }
 
@@ -107,7 +109,7 @@ Elapsed Time: {1} min.",
         /// </summary>
         /// <param name="tokens">Authenticated token</param>
         /// <param name="doc">Tweet content document</param>
-        private static void tweet(Tokens tokens, string doc)
+        private static bool tweet(Tokens tokens, string doc)
         {
             var param = new Dictionary<string, object>();
             param.Add("status", doc);
