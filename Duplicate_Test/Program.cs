@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using log4net;
+using NLog;
 
 namespace Duplicate_Test
 {
@@ -20,7 +20,7 @@ namespace Duplicate_Test
         private static bool tweetedInMinute = false;
         private static int count = 0;
 
-        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// Main
@@ -48,8 +48,8 @@ namespace Duplicate_Test
 
             Console.WriteLine("Authentication was successful.");
             Console.WriteLine("Duplicate-Test start.");
-            Console.WriteLine();
             logger.Debug("Duplicate-Test start.");
+            Console.WriteLine();
 
             string command = string.Empty;
             do {
@@ -117,7 +117,13 @@ namespace Duplicate_Test
             {
                 tokens.Statuses.Update(param);
                 Console.WriteLine("{0}: {1}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), doc);
-                logger.DebugFormat("Tweeted: {0}", doc);
+                logger.Debug("Tweeted: {0}", doc);
+
+                if (isNotTweeted)
+                {
+                    isNotTweeted = true;
+                    setStatusId(filePath, status.Id);
+                }
 
                 return true;
             }
