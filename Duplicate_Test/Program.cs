@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
 
 namespace Duplicate_Test
 {
@@ -18,6 +19,8 @@ namespace Duplicate_Test
 
         private static bool tweetedInMinute = false;
         private static int count = 0;
+
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Main
@@ -46,6 +49,7 @@ namespace Duplicate_Test
             Console.WriteLine("Authentication was successful.");
             Console.WriteLine("Duplicate-Test start.");
             Console.WriteLine();
+            logger.Debug("Duplicate-Test start.");
 
             string command = string.Empty;
             do {
@@ -111,6 +115,9 @@ Elapsed Time: {1} min.",
             {
                 tokens.Statuses.Update(param);
                 Console.WriteLine("{0}: {1}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), doc);
+                logger.DebugFormat("Tweeted: {0}", doc);
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -120,7 +127,23 @@ doc: {1}",
                     ex.Message,
                     doc);
                 Console.WriteLine(message);
+
+                return false;
             }
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <param name="timestamp"></param>
+        /// <returns></returns>
+        private static int desetroyTweet(Tokens tokens long timestamp)
+        {
+            int deleteCount = 0;
+
+            var destroyStatus = tokens.Statuses.Destroy()
+
+            return deleteCount;
         }
     }
 }
