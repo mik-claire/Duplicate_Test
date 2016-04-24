@@ -1,6 +1,7 @@
 ﻿using CoreTweet;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace Duplicate_Test
 
         private static bool tweetedInMinute = false;
         private static int count = 0;
+        private static string filePath = string.Empty;
+        private static bool isNotTweeted = true;
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -47,6 +50,12 @@ namespace Duplicate_Test
             Timer timer = new Timer(tcb, null, 0, 5000);
 
             Console.WriteLine("Authentication was successful.");
+
+            // destroy tweet
+            filePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"\since_id.txt";
+            long sinceId = getStatusId(filePath);
+            destroyTweet(tokens, sinceId);
+
             Console.WriteLine("Duplicate-Test start.");
             logger.Debug("Duplicate-Test start.");
             Console.WriteLine();
@@ -69,6 +78,45 @@ namespace Duplicate_Test
             } while (command != "exit");
         }
 
+        private static long getStatusId(string filePath)
+        {
+            StreamReader sr = null;
+
+            try
+            {
+                sr = new StreamReader(filePath, Encoding.Default);
+                string doc = sr.ReadLine();
+                long id = long.Parse(doc);
+
+                return id;
+            }
+            finally
+            {
+                if (sr != null)
+                {
+                    sr.Close();
+                }
+            }
+        }
+
+        private static void setStatusId(string filePath, long statusId)
+        {
+            StreamWriter sw = null;
+
+            try
+            {
+                sw = new StreamWriter(filePath, false, Encoding.Default);
+                sw.WriteLine(statusId);
+            }
+            finally
+            {
+                if (sw != null)
+                {
+                    sw.Close();
+                }
+            }
+        }
+
         /// <summary>
         /// Timer Event
         /// </summary>
@@ -87,8 +135,7 @@ namespace Duplicate_Test
             }
 
             Console.WriteLine();
-            string doc = string.Format(
-@"Tweet count: {0}, Elapsed Time: {1} min.",
+            string doc = string.Format("Duplicate-Test. Tweet count: {0}, Elapsed Time: {1} min.",
                 count,
                 count * INTERVAL_MINUTES);
             tweet(tokens, doc);
@@ -115,7 +162,7 @@ namespace Duplicate_Test
             param.Add("status", doc);
             try
             {
-                tokens.Statuses.Update(param);
+                var status = tokens.Statuses.Update(param);
                 Console.WriteLine("{0}: {1}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), doc);
                 logger.Debug("Tweeted: {0}", doc);
 
@@ -145,13 +192,25 @@ doc: {1}",
         /// </summary>
         /// <param name="timestamp"></param>
         /// <returns></returns>
-        private static int desetroyTweet(Tokens tokens long timestamp)
+        private static void destroyTweet(Tokens tokens, long sinceId)
         {
-            int deleteCount = 0;
+            var param= new Dictionary<string, object>();
+            param.Add("q", "Duplicate-Test");
+            param.Add("result_type", "recent");
+            param.Add("since_id", sinceId);
 
-            var destroyStatus = tokens.Statuses.Destroy()
+            var searchResult = tokens.Search.Tweets(param);
+            // var searchResult = tokens.Search.Tweets(param);
 
-            return deleteCount;
+            foreach (var status in searchResult)
+            {
+                var destroyParam = new Dictionary<string, object>();
+                destroyParam.Add("id", status.Id);
+                tokens.Statuses.Destroy(destroyParam);
+            }
+
+            Console.WriteLine("Destoryed tweet count: {0}", searchResult.Count);
+            logger.Debug("Destoryed tweet count: {0}", searchResult.Count);
         }
     }
 }
