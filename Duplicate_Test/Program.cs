@@ -148,6 +148,7 @@ namespace Duplicate_Test
             Console.WriteLine();
             string doc = string.Format("Duplicate-Test. Tweet Count: {0}, Reset Count: {1}, Elapsed Time: {2} min.",
                 tweetCount,
+                resetCount,
                 tweetCount * INTERVAL_MINUTES);
             tweet(tokens, doc);
             tweetCount++;
@@ -205,21 +206,28 @@ doc: {1}",
         private static void destroyTweet(Tokens tokens, long sinceId)
         {
             var param= new Dictionary<string, object>();
-            param.Add("q", "Duplicate-Test");
+            param.Add("q", "Test");
             param.Add("result_type", "recent");
             param.Add("since_id", sinceId);
 
             var searchResult = tokens.Search.Tweets(param);
 
+            int deleteCount = 0;
             foreach (var status in searchResult)
             {
+                if (status.User.Id != user.Id)
+                {
+                    continue;
+                }
+
                 var destroyParam = new Dictionary<string, object>();
                 destroyParam.Add("id", status.Id);
                 tokens.Statuses.Destroy(destroyParam);
+                deleteCount++;
             }
 
-            Console.WriteLine("Destoryed tweet count: {0}", searchResult.Count);
-            logger.Debug("Destoryed tweet count: {0}", searchResult.Count);
+            Console.WriteLine("Destoryed tweet count: {0}", deleteCount);
+            logger.Debug("Destoryed tweet count: {0}", deleteCount);
         }
     }
 }
